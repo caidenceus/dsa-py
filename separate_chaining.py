@@ -1,4 +1,4 @@
-class IntHashNode(object):
+class HashNode(object):
     def __init__(self, key, value, next=None):
         self.key = key
         self.value = value
@@ -11,10 +11,13 @@ class IntHashNode(object):
         return f'[{self.key}: {self.value}] -> {self.next}'
 
 
-class IntHashTable(object):
-    def __init__(self, size):
+class HashTable(object):
+    def __init__(self, size=89):
         self._table = [None] * size
+        
+        # Table capacity and number of items in table respectively
         self._size = size
+        self._num_items = 0
     
     def __str__(self):
         rtn = '['
@@ -28,12 +31,49 @@ class IntHashTable(object):
     def __getitem__(self, key):
         return self.get(key)
     
-    def _hash(self, value):
-        return value % self._size
+    def __len__(self):
+        return self._num_items
+    
+    @property
+    def load_factor(self):
+        return self._num_items / self._size
+    
+    def _hash(self, key):
+        """Hash an object and return the hash mod self._table_size.
+
+        Args:
+            key (hashable object): The key to hash.
+
+        Returns:
+            int: The index of self._table for the hashed data.
+        """
+        return hash(key) % self._size
+
+    def _double_size(self):
+        """Double the capacity of the hash table."""
+        new_size = self._size * 2
+        new_table = [None] * new_size
+
+        for i in range(0, self._size):
+            new_table[i] = self._table[i]
+
+        self._table = new_table
+        self._size = new_size
     
     def insert(self, key, value):
+        """Insert a node into the hash table
+
+        Args:
+            key (hashable object): The key to be hashed to lookup the node associated with the key value pair.
+            value (any): The data to be stored in the node being inserted.
+        """
+        self._num_items += 1
         index = self._hash(key)
         new_node = IntHashNode(key, value, None)
+
+        # Double the hash table capacity if it is full
+        if self.load_factor >= 1:
+            self._double_size()
 
         if not self._table[index]:
             self._table[index] = new_node
@@ -45,6 +85,14 @@ class IntHashTable(object):
         last.next = new_node
     
     def get(self, key):
+        """Lookup a value in the table associated with a key.
+
+        Args:
+            key (hashable object): The key of the value to retrieve from the table.
+
+        Returns:
+            any: The value associated with key, or None if no such key exists.
+        """
         index = self._hash(key)
         list_head = self._table[index]
         
@@ -59,10 +107,16 @@ class IntHashTable(object):
         return None
     
     def remove(self, key):
+        """Remove a node from the hash table.
+
+        Args:
+            key (hashable object): The key of the node to remove from the table.
+        """
         # Note: because we call self.get, remove takes O(2n) time worst case which simplifies to O(n) time
         if not self.get(key):
             return
-        
+
+        self._num_items -= 1
         index = self._hash(key)
         head = self._table[index]
 
