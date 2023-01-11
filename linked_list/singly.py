@@ -15,6 +15,7 @@ class Singly(object):
     def __init__(self):
         """Initialize a singly linked list."""
         self._head = None
+        self._size = 0
 
     def __str__(self):
         """String representation of linked list.
@@ -43,12 +44,54 @@ class Singly(object):
         self._iter_node = self._iter_node.next
         return data
 
+    def __len__(self):
+        """O(1) Get the size of the list."""
+        return self._size
+
+    def __getitem__(self, index):
+        """O(n) Allow list to be accessible by indicies.
+        
+        Args:
+            index (int): Index of list element to return.
+        
+        Raises:
+            IndexError: If index is greater than the length of the list.
+        """
+        if index >= len(self):
+            err = f'{index} is larger than list size: {len(self)}'
+            raise IndexOutOfRange(err)
+
+        current = self._head
+        for i in range(index):
+            current = current.next
+        return current.data
+    
+    def __setitem__(self, index, data):
+        """O(n) Allow list node data to be mutable by indicies.
+        
+        Args:
+            index (int): Index of list item to set.
+            data (any): Value to override the existing list data with.
+        
+        Raises:
+            IndexError: If index is greater than the length of the list.
+        """
+        if index >= len(self):
+            err = f'{index} is larger than list size: {len(self)}'
+            raise IndexOutOfRange(err)
+
+        current = self._head
+        for i in range(index):
+            current = current.next
+        current.data = data
+
     def prepend(self, data):
         """Insert a node at the beginning of the list.
 
         Args:
             data (any): Data to be held by the new list head.
         """
+        self._size += 1
         new_head = SinglyNode(data)
         new_head.next = self._head
         self._head = new_head
@@ -61,8 +104,8 @@ class Singly(object):
             index (int): Index of list to insert data; self._head has index 0.
 
         Raises:
-            IndexOutOfRange: If index > 0 and list is empty.
-            IndexOutOfRange: If index is greater than the length of the list.
+            IndexError: If index > 0 and list is empty.
+            IndexError: If index is greater than the length of the list.
         """
         err_msg = f'Index {index} is out of range.'
 
@@ -72,7 +115,7 @@ class Singly(object):
 
         # Can only insert to head of an empty list
         if not self._head:
-            raise IndexOutOfRange(err_msg)
+            raise IndexError(err_msg)
 
         # Find the node directly before where we wish to insert the new node
         temp = self._head
@@ -80,10 +123,11 @@ class Singly(object):
             index -= 1
             temp = temp.next
             if not temp:
-                raise IndexOutOfRange(err_msg)
+                raise IndexError(err_msg)
 
         new_node = SinglyNode(data, temp.next)
         temp.next = new_node
+        self._size += 1
 
     def append(self, data):
         """Add a node to the end of the list.
@@ -91,6 +135,7 @@ class Singly(object):
         Args:
             data (any): Data to be held by the new list head.
         """
+        self._size += 1
         new_tail = SinglyNode(data)
         temp = self._head
 
@@ -111,10 +156,11 @@ class Singly(object):
             index (int): Index of node to delete; self._head has index 0.
 
         Raises:
-            IndexOutOfRange: If index is greater than the length of the list.
+            IndexError: If index is greater than the length of the list.
         """
         if index == 0 and self._head:
             self._head = self._head.next
+            self._size -= 1
             return
 
         temp = self._head
@@ -123,5 +169,6 @@ class Singly(object):
             temp = temp.next
             if not temp:
                 err_msg = f'Index {index} is out of range.'
-                raise IndexOutOfRange(err_msg)
+                raise IndexError(err_msg)
         temp.next = temp.next.next
+        self._size -= 1
