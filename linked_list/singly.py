@@ -30,6 +30,19 @@ class Singly(object):
             temp = temp.next
         return str(output)
 
+    def __iter__(self):
+        """Make linked list act as an iterator."""
+        self._iter_node = self._head
+        return self
+
+    def __next__(self):
+        """Get the next value of the iterator."""
+        if not self._iter_node:
+            raise StopIteration
+        data = self._iter_node.data
+        self._iter_node = self._iter_node.next
+        return data
+
     def prepend(self, data):
         """Insert a node at the beginning of the list.
 
